@@ -1,0 +1,15 @@
+{
+  "service": {
+    "name": "consumer4",
+    "address": "localhost",
+    "port": 8003,
+    "check": {
+      "http": "http://localhost:8003",
+      "tls_skip_verify": false,
+      "method": "GET",
+      "header": {"Content-Type": ["application/json"]},
+      "interval": "10s",
+      "timeout": "5s"
+    }
+  }
+}

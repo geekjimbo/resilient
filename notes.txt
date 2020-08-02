@@ -1,0 +1,56 @@
+# pyro4 to daemonize services
+# https://pyro4.readthedocs.io/en/stable/intro.html
+
+# start NS
+python -m pyro4-ns  
+
+# start simulated consumer servers
+python server.py
+
+# check NS 
+pyro4-nsc list                                                                                   jimmyfigueroa@ip-192-168-100-48
+--------START LIST 
+Pyro.NameServer --> PYRO:Pyro.NameServer@localhost:9090
+    metadata: ['class:Pyro4.naming.NameServer']
+consumers.consumer1 --> PYRO:obj_a2063cc8b9f34388aaf63bb0c695e3a7@localhost:53005
+consumers.consumer2 --> PYRO:obj_cb4b1ca910f54796a9b6bb329da24087@localhost:53005
+consumers.consumer3 --> PYRO:obj_20dbd157948f477296d66a015fab897d@localhost:53005
+consumers.consumer4 --> PYRO:obj_09d164c0399c4f96a6144aa0595b6ef3@localhost:53005
+example.greeting --> PYRO:obj_43d4e4910aeb46ca91c84f6bceeb00fe@localhost:52969
+--------END LIST 
+(python-test) ------
+
+# start http consumers
+python twist_client.py
+
+# start consul server
+consul agent -dev -config-dir=. -node machine
+
+>> output
+    2020-08-02T13:26:44.605-0600 [DEBUG] agent: Check status updated: check=service:consumer1 status=passing
+    2020-08-02T13:26:46.474-0600 [DEBUG] agent: Check status updated: check=service:consumer3 status=passing
+    2020-08-02T13:26:47.061-0600 [DEBUG] agent: Check status updated: check=service:consumer2 status=passing
+    2020-08-02T13:26:54.323-0600 [DEBUG] agent: Check status updated: check=service:consumer4 status=passing
+<<
+
+# start circuitbreaker
+python circuitsample.py 
+
+>> output
+2020-08-02 13:31:21::: Health status = passed
+2020-08-02 13:31:22::: Health status = passed
+2020-08-02 13:31:23::: Health status = passed
+2020-08-02 13:31:24::: Health status = passed
+2020-08-02 13:31:25::: Health status = passed
+2020-08-02 13:31:26::: Health status = passed
+2020-08-02 13:31:27::: Health status = passed
+2020-08-02 13:31:28::: Health status = passed
+2020-08-02 13:31:29::: Health status = passed
+<<
+
+# break twist-client.py
+# by Ctrl C 
+# watch it all come to life again 
+
+# consul web console
+# http://localhost:8500/ui/dc1/services
